@@ -1,0 +1,32 @@
+[
+  {
+    "index": 0,
+    "timestamp": "2026-09-06 19:44:35",
+    "email_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "prediction": "genesis",
+    "confidence": 1.0,
+    "previous_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "nonce": 0,
+    "hash": "6633f95c85ec430d6026117799a51dd2399bed277ee49152fb087019d1013b8e"
+  },
+  {
+    "index": 1,
+    "timestamp": "2026-09-06 19:44:45",
+    "email_hash": "9b8bd321e1a54c7b9b9a8b3a2dc047863428cd6b3dcc9e243b6ca90fe3465479",
+    "prediction": "spam",
+    "confidence": 0.99,
+    "previous_hash": "6633f95c85ec430d6026117799a51dd2399bed277ee49152fb087019d1013b8e",
+    "nonce": 324,
+    "hash": "00c8cb3cac2f635d24bf2a7436cfc4a0fbe41b67064bda8756e534870f9fa37e"
+  },
+  {
+    "index": 2,
+    "timestamp": "2026-09-06 19:44:57",
+    "email_hash": "4955e9f02ae672478feb10b445d3450e189c6d932e744025ca12342f36dc993e",
+    "prediction": "ham",
+    "confidence": 0.525,
+    "previous_hash": "00c8cb3cac2f635d24bf2a7436cfc4a0fbe41b67064bda8756e534870f9fa37e",
+    "nonce": 1,
+    "hash": "000d54515f2745aec6bb7e580ee2ba22aeaec3aac2bc92168823b8597a230567"
+  }
+]

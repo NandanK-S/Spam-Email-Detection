@@ -1,0 +1,103 @@
+{
+  "results": [
+    {
+      "model": "Logistic Regression",
+      "method": "SMOTE",
+      "accuracy": 0.9836,
+      "precision": 0.9254,
+      "recall": 0.9466,
+      "f1_score": 0.9358
+    },
+    {
+      "model": "Logistic Regression",
+      "method": "class_weight",
+      "accuracy": 0.9797,
+      "precision": 0.9044,
+      "recall": 0.9389,
+      "f1_score": 0.9213
+    },
+    {
+      "model": "Multinomial NB",
+      "method": "SMOTE",
+      "accuracy": 0.9739,
+      "precision": 0.8514,
+      "recall": 0.9618,
+      "f1_score": 0.9032
+    },
+    {
+      "model": "Multinomial NB",
+      "method": "class_weight",
+      "accuracy": 0.97,
+      "precision": 0.8247,
+      "recall": 0.9695,
+      "f1_score": 0.8912
+    },
+    {
+      "model": "SVM (Linear)",
+      "method": "SMOTE",
+      "accuracy": 0.9865,
+      "precision": 0.9606,
+      "recall": 0.9313,
+      "f1_score": 0.9457
+    },
+    {
+      "model": "SVM (Linear)",
+      "method": "class_weight",
+      "accuracy": 0.9884,
+      "precision": 0.9612,
+      "recall": 0.9466,
+      "f1_score": 0.9538
+    },
+    {
+      "model": "Random Forest",
+      "method": "SMOTE",
+      "accuracy": 0.9923,
+      "precision": 1.0,
+      "recall": 0.9389,
+      "f1_score": 0.9685
+    },
+    {
+      "model": "Random Forest",
+      "method": "class_weight",
+      "accuracy": 0.9913,
+      "precision": 0.9841,
+      "recall": 0.9466,
+      "f1_score": 0.965
+    },
+    {
+      "model": "Gradient Boosting",
+      "method": "SMOTE",
+      "accuracy": 0.9874,
+      "precision": 0.9609,
+      "recall": 0.9389,
+      "f1_score": 0.9498
+    },
+    {
+      "model": "Gradient Boosting",
+      "method": "class_weight",
+      "accuracy": 0.9865,
+      "precision": 0.9535,
+      "recall": 0.9389,
+      "f1_score": 0.9462
+    },
+    {
+      "model": "Baseline (LR + TF-IDF only)",
+      "method": "none",
+      "accuracy": 0.9681,
+      "precision": 0.99,
+      "recall": 0.7557,
+      "f1_score": 0.8571
+    }
+  ],
+  "best_model": {
+    "model_name": "Random Forest",
+    "balancing_method": "SMOTE",
+    "uses_nb_data": false,
+    "metrics": {
+      "accuracy": 0.9923,
+      "precision": 1.0,
+      "recall": 0.9389,
+      "f1_score": 0.9685
+    }
+  }
+}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { mockVerifyChain } from "../../mock/mockApi";
+import { verifyChain } from "../lib/api";
 
 export default function ChainVerifyPanel() {
   const [verifyResult, setVerifyResult] = useState(null);
@@ -12,7 +12,7 @@ export default function ChainVerifyPanel() {
     setIsVerifying(true);
     setVerifyResult(null);
 
-    const result = await mockVerifyChain(simulateTamper);
+    const result = await verifyChain(simulateTamper);
     setVerifyResult(result);
     setIsVerifying(false);
   };

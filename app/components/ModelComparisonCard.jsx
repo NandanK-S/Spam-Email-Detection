@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { mockGetModelComparison } from "../../mock/mockApi";
+import { getModelComparison } from "../lib/api";
 
 export default function ModelComparisonCard() {
   const [models, setModels] = useState([]);
 
   useEffect(() => {
-    mockGetModelComparison().then(setModels);
+    getModelComparison().then(setModels).catch(() => setModels([]));
   }, []);
 
   if (models.length === 0) return null;
@@ -43,7 +43,7 @@ export default function ModelComparisonCard() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
           {models.map((model, idx) => (
             <div
-              key={model.name}
+              key={`${model.name}-${model.method}`}
               className={`group relative p-1.5 rounded-[2rem] transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${
                 model.selected
                   ? "bg-gradient-to-br from-violet-500/20 via-indigo-500/10 to-emerald-500/10 border border-violet-500/20 shadow-lg shadow-violet-500/5"

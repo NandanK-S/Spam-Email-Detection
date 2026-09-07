@@ -6,28 +6,58 @@ export default function FeatureBreakdownTable({ features }) {
   const rows = [
     {
       label: "Character Count",
-      value: features.charCount.toLocaleString(),
+      value: features.charCount?.toLocaleString() ?? 0,
       icon: "Aa",
     },
     {
       label: "Word Count",
-      value: features.wordCount.toLocaleString(),
+      value: features.wordCount?.toLocaleString() ?? 0,
       icon: "W",
     },
     {
       label: "Link / URL Count",
-      value: features.linkCount,
+      value: features.linkCount ?? 0,
       icon: "🔗",
     },
     {
       label: "Capital Letter Ratio",
-      value: `${features.capitalRatio}%`,
+      value: `${features.capitalRatio ?? 0}%`,
       icon: "AB",
     },
     {
       label: "Punctuation Count",
-      value: features.punctuationCount,
+      value: features.punctuationCount ?? 0,
       icon: "!?",
+    },
+    {
+      label: "Digit Count",
+      value: features.digitCount ?? 0,
+      icon: "#",
+    },
+    {
+      label: "Special Characters",
+      value: features.specialCharCount ?? 0,
+      icon: "@",
+    },
+    {
+      label: "Avg Word Length",
+      value: features.avgWordLength ?? 0,
+      icon: "μ",
+    },
+    {
+      label: "Exclamation Count",
+      value: features.exclamationCount ?? 0,
+      icon: "!!",
+    },
+    {
+      label: "Urgency Keywords",
+      value: features.urgencyWordCount ?? 0,
+      icon: "⚡",
+    },
+    {
+      label: "Suspicious / Sensitive Terms",
+      value: features.sensitiveWordCount ?? 0,
+      icon: "🛡️",
     },
   ];
 

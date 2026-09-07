@@ -10,7 +10,7 @@ import BlockchainLog from "./components/BlockchainLog";
 import ChainVerifyPanel from "./components/ChainVerifyPanel";
 import ModelComparisonCard from "./components/ModelComparisonCard";
 
-import { mockPredictEmail, mockGetBlockchainLog } from "../mock/mockApi";
+import { predictEmail, getBlockchainLog } from "./lib/api";
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
@@ -19,27 +19,32 @@ export default function Home() {
 
   // Load initial blockchain log on mount
   useEffect(() => {
-    mockGetBlockchainLog().then((log) => setBlockchainLog(log));
+    getBlockchainLog()
+      .then((log) => setBlockchainLog(log))
+      .catch(() => setBlockchainLog([]));
   }, []);
 
   const handleCheckEmail = async (text) => {
     setIsLoading(true);
     setPredictionResult(null);
 
-    const result = await mockPredictEmail(text);
-    setPredictionResult(result);
-    setIsLoading(false);
+    try {
+      const result = await predictEmail(text);
+      setPredictionResult(result);
 
-    // If spam, prepend to blockchain log
-    if (result.prediction === "Spam") {
-      const newBlock = {
-        blockNumber: blockchainLog.length + 1,
-        timestamp: new Date().toISOString().replace("T", " ").slice(0, 19),
-        emailHash: result.emailHash,
-        prediction: result.prediction,
-        confidence: result.confidence,
-      };
-      setBlockchainLog((prev) => [newBlock, ...prev]);
+      // Refresh blockchain log from backend (all predictions are logged)
+      const updatedLog = await getBlockchainLog();
+      setBlockchainLog(updatedLog);
+    } catch (err) {
+      console.error("Prediction error:", err);
+      setPredictionResult({
+        prediction: "Error",
+        confidence: 0,
+        features: null,
+        error: err.message,
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 

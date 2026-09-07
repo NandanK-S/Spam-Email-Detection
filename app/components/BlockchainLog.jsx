@@ -7,6 +7,34 @@ export default function BlockchainLog({ blocks }) {
     return `${hash.slice(0, 6)}...${hash.slice(-4)}`;
   };
 
+  const formatTimestamp = (rawTs) => {
+    if (!rawTs) return "";
+    try {
+      // Parse UTC timestamp: "2026-09-06 18:59:29" -> "2026-09-06T18:59:29Z"
+      const utcString = rawTs.includes("T")
+        ? (rawTs.endsWith("Z") ? rawTs : rawTs + "Z")
+        : rawTs.replace(" ", "T") + "Z";
+      const date = new Date(utcString);
+      if (!isNaN(date.getTime())) {
+        return date.toLocaleString(undefined, {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: true,
+        });
+      }
+    } catch {
+      // fallback to raw string
+    }
+    return rawTs;
+  };
+
+  const isSpam = (prediction) =>
+    prediction?.toLowerCase() === "spam";
+
   return (
     <section className="px-4 mt-16 md:mt-24 animate-fade-up-delay-2">
       <div className="max-w-4xl mx-auto">
@@ -22,7 +50,7 @@ export default function BlockchainLog({ blocks }) {
             </span>
           </h2>
           <p className="text-sm text-[#64748b] mt-2">
-            Flagged Spam Emails — Tamper-Proof Records
+            All Predictions — Tamper-Proof Records
           </p>
         </div>
 
@@ -64,8 +92,8 @@ export default function BlockchainLog({ blocks }) {
                           {block.blockNumber}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-[#94a3b8] text-xs font-mono tabular-nums">
-                        {block.timestamp}
+                      <td className="px-6 py-4 text-[#94a3b8] text-xs font-mono tabular-nums whitespace-nowrap">
+                        {formatTimestamp(block.timestamp)}
                       </td>
                       <td className="px-6 py-4">
                         <code className="text-xs font-mono bg-white/[0.04] border border-white/[0.06] px-2.5 py-1 rounded-md text-indigo-300">
@@ -73,8 +101,20 @@ export default function BlockchainLog({ blocks }) {
                         </code>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] uppercase tracking-wider font-bold bg-red-500/10 border border-red-500/20 text-red-400">
-                          <span className="w-1 h-1 rounded-full bg-red-400" />
+                        <span
+                          className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] uppercase tracking-wider font-bold ${
+                            isSpam(block.prediction)
+                              ? "bg-red-500/10 border border-red-500/20 text-red-400"
+                              : "bg-emerald-500/10 border border-emerald-500/20 text-emerald-400"
+                          }`}
+                        >
+                          <span
+                            className={`w-1 h-1 rounded-full ${
+                              isSpam(block.prediction)
+                                ? "bg-red-400"
+                                : "bg-emerald-400"
+                            }`}
+                          />
                           {block.prediction}
                         </span>
                       </td>
@@ -100,16 +140,28 @@ export default function BlockchainLog({ blocks }) {
                     <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white/[0.04] border border-white/[0.06] text-xs font-bold text-violet-400">
                       #{block.blockNumber}
                     </span>
-                    <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] uppercase tracking-wider font-bold bg-red-500/10 border border-red-500/20 text-red-400">
-                      <span className="w-1 h-1 rounded-full bg-red-400" />
+                    <span
+                      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] uppercase tracking-wider font-bold ${
+                        isSpam(block.prediction)
+                          ? "bg-red-500/10 border border-red-500/20 text-red-400"
+                          : "bg-emerald-500/10 border border-emerald-500/20 text-emerald-400"
+                      }`}
+                    >
+                      <span
+                        className={`w-1 h-1 rounded-full ${
+                          isSpam(block.prediction)
+                            ? "bg-red-400"
+                            : "bg-emerald-400"
+                        }`}
+                      />
                       {block.prediction}
                     </span>
                   </div>
                   <div className="space-y-1.5 text-xs">
                     <div className="flex justify-between">
                       <span className="text-[#64748b]">Time</span>
-                      <span className="text-[#94a3b8] font-mono tabular-nums">
-                        {block.timestamp}
+                      <span className="text-[#94a3b8] font-mono tabular-nums text-right">
+                        {formatTimestamp(block.timestamp)}
                       </span>
                     </div>
                     <div className="flex justify-between">

@@ -35,8 +35,8 @@ def clean_text(text: str) -> str:
     # Lowercase
     text = text.lower()
     
-    # Remove control characters and non-printable chars (keep basic printable ASCII + common unicode)
-    text = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', text)
+    # Remove non-whitespace control characters and non-printable chars (keep \t, \n, \r)
+    text = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\x9f]', '', text)
     
     # Collapse multiple whitespace into single space
     text = re.sub(r'\s+', ' ', text)
@@ -123,6 +123,19 @@ def extract_structural_features(text: str) -> dict:
     
     # Urgency word count — phishing/spam pressure tactics
     text_lower = text.lower()
+    word_tokens = set(re.findall(r'\b[a-z0-9_]+\b', text_lower))
+    
+    def count_terms(term_list):
+        cnt = 0
+        for item in term_list:
+            if ' ' in item:
+                if item in text_lower:
+                    cnt += 1
+            else:
+                if item in word_tokens:
+                    cnt += 1
+        return cnt
+
     urgency_words = [
         'urgent', 'immediately', 'now', 'today', 'expire', 'expires', 'expired',
         'suspend', 'suspended', 'verify', 'verified', 'verification',
@@ -131,7 +144,7 @@ def extract_structural_features(text: str) -> dict:
         'deadline', 'final notice', 'action required', 'respond immediately',
         'claim', 'winner', 'won', 'congratulations', 'selected',
     ]
-    urgency_word_count = sum(1 for w in urgency_words if w in text_lower)
+    urgency_word_count = count_terms(urgency_words)
     
     # Sensitive/financial word count — phishing indicators
     sensitive_words = [
@@ -143,7 +156,7 @@ def extract_structural_features(text: str) -> dict:
         'bank details', 'personal information', 'financial',
         'free', 'prize', 'reward', 'bonus', 'discount', 'offer',
     ]
-    sensitive_word_count = sum(1 for w in sensitive_words if w in text_lower)
+    sensitive_word_count = count_terms(sensitive_words)
     
     return {
         "char_count": char_count,

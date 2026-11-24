@@ -5,16 +5,23 @@ import { verifyChain } from "../lib/api";
 
 export default function ChainVerifyPanel() {
   const [verifyResult, setVerifyResult] = useState(null);
+  const [errorMsg, setErrorMsg] = useState(null);
   const [isVerifying, setIsVerifying] = useState(false);
   const [simulateTamper, setSimulateTamper] = useState(false);
 
   const handleVerify = async () => {
     setIsVerifying(true);
     setVerifyResult(null);
+    setErrorMsg(null);
 
-    const result = await verifyChain(simulateTamper);
-    setVerifyResult(result);
-    setIsVerifying(false);
+    try {
+      const result = await verifyChain(simulateTamper);
+      setVerifyResult(result);
+    } catch (err) {
+      setErrorMsg(err.message || "Failed to connect to backend server");
+    } finally {
+      setIsVerifying(false);
+    }
   };
 
   return (
@@ -138,12 +145,32 @@ export default function ChainVerifyPanel() {
                     >
                       {verifyResult.valid
                         ? "Chain Verified — No Tampering Detected"
-                        : `Tampering Detected in Block #${verifyResult.tamperedBlock}`}
+                        : `Tampering Detected in Block #${verifyResult.tamperedBlock ?? verifyResult.tampered_block}`}
                     </div>
                     <div className="text-xs text-[#64748b] mt-1">
                       {verifyResult.valid
                         ? "All block hashes match their predecessors. Integrity confirmed."
                         : "Hash mismatch found. The chain has been compromised at the indicated block."}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Backend connection error */}
+            {errorMsg && (
+              <div className="mt-6 rounded-2xl px-6 py-4 border bg-amber-500/10 border-amber-500/20 animate-fade-up">
+                <div className="flex items-center gap-3">
+                  <span className="text-xl">⚠️</span>
+                  <div>
+                    <div className="text-sm font-bold text-amber-400">
+                      Cannot connect to Python backend
+                    </div>
+                    <div className="text-xs text-[#94a3b8] mt-1">
+                      Please start the FastAPI server:{" "}
+                      <code className="bg-white/10 px-1.5 py-0.5 rounded text-amber-300 font-mono text-[11px]">
+                        uvicorn backend:app --reload --port 8000
+                      </code>
                     </div>
                   </div>
                 </div>

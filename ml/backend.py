@@ -90,6 +90,10 @@ class VerifyRequest(BaseModel):
     simulate_tamper: bool = False
 
 
+# Maximum allowable payload length for email analysis (50 KB)
+MAX_EMAIL_LENGTH = 50_000
+
+
 # =============================================================================
 # Endpoints
 # =============================================================================
@@ -102,6 +106,12 @@ async def api_predict(request: PredictRequest):
     """
     if not request.text or not request.text.strip():
         raise HTTPException(status_code=400, detail="Email text cannot be empty")
+    
+    if len(request.text) > MAX_EMAIL_LENGTH:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Email text exceeds maximum allowed length of {MAX_EMAIL_LENGTH} characters"
+        )
     
     try:
         # Run ML prediction
@@ -134,8 +144,12 @@ async def api_predict(request: PredictRequest):
             "blockNumber": block["index"],
             "blockHash": block["hash"],
         }
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
+        import logging
+        logging.error(f"Internal prediction error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal prediction service error")
 
 
 @app.get("/api/blockchain/log")
@@ -163,22 +177,37 @@ async def api_blockchain_log():
 async def api_blockchain_verify(request: VerifyRequest):
     """
     Verify blockchain chain integrity.
-    Optionally simulate tampering for demonstration.
+    Optionally simulate tampering for demonstration (can be disabled via ALLOW_TAMPER_SIMULATION=false).
     """
     if request.simulate_tamper:
+        allow_tamper = os.getenv("ALLOW_TAMPER_SIMULATION", "true").lower() in ("true", "1", "yes")
+        if not allow_tamper:
+            raise HTTPException(status_code=403, detail="Tamper simulation is disabled in this environment")
         # Simulate tampering in memory (doesn't persist)
         tampered_idx = blockchain.simulate_tamper()
         result = blockchain.verify_chain()
         # Restore the chain after simulation
         blockchain.restore_chain()
+        if not result.get("valid", True):
+            result["tamperedBlock"] = result.get("tampered_block")
         return result
     else:
-        return blockchain.verify_chain()
+        result = blockchain.verify_chain()
+        if not result.get("valid", True):
+            result["tamperedBlock"] = result.get("tampered_block")
+        return result
+
+
+_model_comparison_cache = None
 
 
 @app.get("/api/models/comparison")
 async def api_model_comparison():
-    """Return model comparison data from the training pipeline."""
+    """Return model comparison data from the training pipeline (cached in memory)."""
+    global _model_comparison_cache
+    if _model_comparison_cache is not None:
+        return _model_comparison_cache
+
     artifacts_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "artifacts")
     comparison_path = os.path.join(artifacts_dir, "model_comparison.json")
     
@@ -188,7 +217,7 @@ async def api_model_comparison():
             detail="Model comparison data not found. Run the training pipeline first."
         )
     
-    with open(comparison_path, 'r') as f:
+    with open(comparison_path, 'r', encoding='utf-8') as f:
         data = json.load(f)
     
     best_model_name = data.get("best_model", {}).get("model_name", "")
@@ -221,6 +250,7 @@ async def api_model_comparison():
                         result["method"] == best_method),
         })
     
+    _model_comparison_cache = models
     return models
 
 

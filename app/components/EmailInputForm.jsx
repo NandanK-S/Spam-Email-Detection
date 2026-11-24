@@ -32,6 +32,7 @@ export default function EmailInputForm({ onSubmit, isLoading }) {
               onChange={(e) => setEmailText(e.target.value)}
               placeholder="Paste email content here..."
               rows={6}
+              maxLength={50000}
               className="w-full resize-none rounded-2xl bg-white/[0.03] border border-white/[0.06] px-5 py-4 text-sm md:text-base text-[#f8fafc] placeholder-[#64748b] focus:outline-none focus:border-violet-500/40 focus:ring-1 focus:ring-violet-500/20 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] font-light leading-relaxed"
             />
 

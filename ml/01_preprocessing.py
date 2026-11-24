@@ -130,7 +130,15 @@ def preprocess(data_dir: str = None) -> pd.DataFrame:
         ("ham", "Subject: Draft Proposal for Major Project\nHi Dr. Miller, I have uploaded the draft architecture diagram for our major project. Looking forward to your feedback during office hours."),
         ("ham", "Subject: Welcome to the Engineering Team\nHi Alex, we are thrilled to have you join our software engineering group. Your onboarding schedule for this week is attached."),
         ("ham", "Subject: Software Engineering Lab Submission Deadline\nReminder to all enrolled students: the deadline for submitting Lab 4 is this Sunday at 11:59 PM via the course portal."),
-        ("ham", "Subject: Thank You for the Interview\nDear Hiring Team, thank you for the insightful conversation today regarding the machine learning engineer position. I enjoyed learning more about the team's initiatives."),
+        # Legitimate E-Commerce, Shipping & Transactional Email samples
+        ("ham", "Subject: Your order #48291 has shipped!\nHi Alex,\nGood news—your recent order is on the way! You can track your package using tracking number 1Z999AA10123456784. Expected delivery is Friday between 2:00 PM and 6:00 PM. If you have any questions about your order, visit our Help Center.\nThanks for shopping with us!"),
+        ("ham", "Subject: Order Confirmation - Order #938102\nThank you for your purchase from TechGear Store! Your order #938102 has been received and is currently being processed. You will receive another notification when your package ships. Total billed: $129.99 to your card ending in 4128."),
+        ("ham", "Subject: Shipping Update: Your Package is Out for Delivery\nYour Amazon package with tracking ID TBA982347101 is scheduled for delivery today by 8:00 PM. Carrier: Amazon Logistics. You can manage your delivery preferences or track live progress via your account portal."),
+        ("ham", "Subject: Flight Confirmation - Booking Reference #XK89QP\nDear Passenger, your flight from Seattle (SEA) to San Francisco (SFO) on October 14 is confirmed. Departure: 08:30 AM, Terminal 2, Gate B4. Please check in online 24 hours prior to departure."),
+        ("ham", "Subject: Receipt for Your Subscription Renewal\nThank you for continuing your annual subscription with CloudServices Pro. Your payment of $99.00 has been processed successfully. Transaction reference: TXN-84729104. Invoices can be downloaded from your billing dashboard."),
+        ("ham", "Subject: Support Ticket #54921 Resolved: Account Settings Inquiry\nHello David,\nOur customer support team has reviewed your ticket regarding notification preferences. We have updated your account profile accordingly. Please let us know if you need any further assistance."),
+        ("ham", "Subject: Appointment Reminder: Dental Cleaning on Thursday at 3:30 PM\nThis is a friendly reminder of your upcoming appointment with Dr. Chen on Thursday, November 20 at 3:30 PM. Please arrive 10 minutes early. If you need to reschedule, call our clinic at 555-0199."),
+        ("ham", "Subject: Your Package Has Been Delivered - Porch Dropoff\nYour package containing 2 items was safely delivered to your front porch at 1:45 PM today. Carrier tracking number: 9400111899562810349123. Thank you for ordering with us!"),
     ]
     
     email_df = pd.DataFrame(email_samples, columns=['label', 'message'])

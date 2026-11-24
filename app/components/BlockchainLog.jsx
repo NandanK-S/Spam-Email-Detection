@@ -1,7 +1,14 @@
 "use client";
 
+import { useState } from "react";
+
 export default function BlockchainLog({ blocks }) {
+  const [visibleCount, setVisibleCount] = useState(10);
+
   if (!blocks || blocks.length === 0) return null;
+
+  const displayedBlocks = blocks.slice(0, visibleCount);
+  const hasMore = blocks.length > visibleCount;
 
   const truncateHash = (hash) => {
     return `${hash.slice(0, 6)}...${hash.slice(-4)}`;
@@ -80,7 +87,7 @@ export default function BlockchainLog({ blocks }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {blocks.map((block, i) => (
+                  {displayedBlocks.map((block, i) => (
                     <tr
                       key={`${block.blockNumber}-${i}`}
                       className={`border-b border-white/[0.03] transition-colors duration-300 hover:bg-white/[0.02] ${
@@ -131,7 +138,7 @@ export default function BlockchainLog({ blocks }) {
 
             {/* Mobile cards */}
             <div className="md:hidden divide-y divide-white/[0.04]">
-              {blocks.map((block, i) => (
+              {displayedBlocks.map((block, i) => (
                 <div
                   key={`mobile-${block.blockNumber}-${i}`}
                   className={`p-5 ${i === 0 ? "bg-white/[0.02]" : ""}`}
@@ -180,6 +187,22 @@ export default function BlockchainLog({ blocks }) {
                 </div>
               ))}
             </div>
+
+            {/* Load more controls */}
+            {hasMore && (
+              <div className="p-4 text-center border-t border-white/[0.06] bg-white/[0.01]">
+                <button
+                  type="button"
+                  onClick={() => setVisibleCount((prev) => prev + 15)}
+                  className="inline-flex items-center gap-2 rounded-full px-6 py-2.5 text-xs font-medium text-[#94a3b8] bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.08] hover:text-white transition-all duration-300 active:scale-95 cursor-pointer"
+                >
+                  <span>Load More Entries ({blocks.length - visibleCount} remaining)</span>
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M19 9l-7 7-7-7" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

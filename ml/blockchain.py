@@ -11,6 +11,7 @@ import hashlib
 import json
 import os
 import time
+import threading
 from datetime import datetime, timezone
 
 
@@ -89,6 +90,7 @@ class Blockchain:
             data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
         self.data_dir = data_dir
         self.chain_file = os.path.join(data_dir, "blockchain.json")
+        self._lock = threading.RLock()
         self.chain: list[Block] = []
         self._load_chain()
     
@@ -121,9 +123,35 @@ class Blockchain:
     
     def _save_chain(self):
         """Persist chain to disk."""
+        self._atomic_save()
+
+    def _atomic_save(self):
+        """Persist chain to disk atomically with retry on Windows file lock contention."""
         os.makedirs(self.data_dir, exist_ok=True)
-        with open(self.chain_file, 'w') as f:
-            json.dump([b.to_dict() for b in self.chain], f, indent=2)
+        temp_file = f"{self.chain_file}.tmp"
+        with self._lock:
+            with open(temp_file, 'w', encoding='utf-8') as f:
+                json.dump([b.to_dict() for b in self.chain], f, indent=2)
+            
+            # Windows retry loop for atomic replace when file is held by an editor/watcher
+            replaced = False
+            for attempt in range(5):
+                try:
+                    os.replace(temp_file, self.chain_file)
+                    replaced = True
+                    break
+                except PermissionError:
+                    time.sleep(0.02 * (attempt + 1))
+            
+            if not replaced:
+                # Direct safe overwrite fallback
+                with open(self.chain_file, 'w', encoding='utf-8') as f:
+                    json.dump([b.to_dict() for b in self.chain], f, indent=2)
+                if os.path.exists(temp_file):
+                    try:
+                        os.remove(temp_file)
+                    except OSError:
+                        pass
     
     def _proof_of_work(self, block: Block) -> Block:
         """Simple proof-of-work: find a nonce that makes the hash start with DIFFICULTY zeros."""
@@ -153,24 +181,25 @@ class Blockchain:
         Returns:
             Dictionary representation of the new block.
         """
-        last_block = self.chain[-1]
-        
-        new_block = Block(
-            index=len(self.chain),
-            timestamp=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
-            email_hash=self.hash_email(email_text),
-            prediction=prediction,
-            confidence=round(confidence, 4),
-            previous_hash=last_block.hash,
-        )
-        
-        # Apply proof-of-work
-        new_block = self._proof_of_work(new_block)
-        
-        self.chain.append(new_block)
-        self._save_chain()
-        
-        return new_block.to_dict()
+        with self._lock:
+            last_block = self.chain[-1]
+            
+            new_block = Block(
+                index=len(self.chain),
+                timestamp=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
+                email_hash=self.hash_email(email_text),
+                prediction=prediction,
+                confidence=round(confidence, 4),
+                previous_hash=last_block.hash,
+            )
+            
+            # Apply proof-of-work
+            new_block = self._proof_of_work(new_block)
+            
+            self.chain.append(new_block)
+            self._atomic_save()
+            
+            return new_block.to_dict()
     
     def get_chain(self) -> list[dict]:
         """Return the full chain as a list of dicts (excluding genesis block)."""

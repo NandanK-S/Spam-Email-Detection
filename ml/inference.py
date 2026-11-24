@@ -185,7 +185,9 @@ def predict_email(text: str) -> dict:
     # Real-world spam filters (SpamAssassin, Barracuda) combine ML with
     # heuristic rule-based weighting to detect credential harvesting / phishing.
     # =========================================================================
+    import re
     text_lower = text.lower()
+    word_tokens = set(re.findall(r'\b[a-z0-9_]+\b', text_lower))
     urgency_cnt = raw_features.get("urgency_word_count", 0)
     sensitive_cnt = raw_features.get("sensitive_word_count", 0)
     
@@ -199,8 +201,27 @@ def predict_email(text: str) -> dict:
         'immediate deactivation', 'terminated', 'within 24 hours'
     ]
     
-    has_credential_request = any(ci in text_lower for ci in credential_indicators)
-    has_urgency_threat = any(ui in text_lower for ui in urgency_threat_indicators)
+    def matches_indicator(phrase):
+        if ' ' in phrase:
+            return phrase in text_lower
+        return phrase in word_tokens
+
+    has_credential_request = any(matches_indicator(ci) for ci in credential_indicators)
+    has_urgency_threat = any(matches_indicator(ui) for ui in urgency_threat_indicators)
+    
+    # Transactional, Business & Calendar Ham Cues (e-commerce, orders, receipts, team syncs)
+    legitimate_cues = [
+        'order #', 'order is on the way', 'has shipped', 'tracking number',
+        'track your package', 'expected delivery', 'order confirmation',
+        'receipt for your', 'your receipt', 'booking confirmation', 'itinerary',
+        'flight confirmation', 'hotel reservation', 'delivery update',
+        'help center', 'customer support', 'thanks for shopping',
+        'shipping confirmation', 'your package', 'appointment reminder',
+        'package has been delivered', 'out for delivery',
+        'team sync', 'standup', 'meeting scheduled', 'agenda for',
+        'project status', 'conference room', 'call notes', 'weekly sync'
+    ]
+    has_legitimate_cue = any(ti in text_lower for ti in legitimate_cues)
     
     threat_boost = 0.0
     if has_credential_request and has_urgency_threat:
@@ -214,10 +235,16 @@ def predict_email(text: str) -> dict:
     if urgency_cnt >= 2 and sensitive_cnt >= 2:
         threat_boost = max(threat_boost, 0.35)
         
-    adjusted_p_spam = min(0.9999, p_spam + threat_boost)
+    # Apply ham reassurance for legitimate non-phishing communications
+    ham_boost = 0.0
+    if has_legitimate_cue and not has_credential_request and not has_urgency_threat:
+        ham_boost = 0.35
+        
+    adjusted_p_spam = min(0.9999, max(0.0001, p_spam + threat_boost - ham_boost))
     adjusted_p_ham = 1.0 - adjusted_p_spam
     
-    if adjusted_p_spam >= 0.50:
+    SPAM_THRESHOLD = 0.55
+    if adjusted_p_spam >= SPAM_THRESHOLD:
         prediction_label = "spam"
         confidence = adjusted_p_spam
     else:
